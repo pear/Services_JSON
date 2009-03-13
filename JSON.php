@@ -1,6 +1,5 @@
 <?php
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
  * Converts to and from JSON format.
  *
@@ -224,7 +223,7 @@ class Services_JSON
     }
 
    /**
-    * encodes an arbitrary variable into JSON format
+    * encodes an arbitrary variable into JSON format (and sends JSON Header)
     *
     * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
     *                           see argument 1 to Services_JSON() above for array-parsing behavior.
@@ -236,6 +235,38 @@ class Services_JSON
     */
     function encode($var)
     {
+        header('Content-type: application/x-javascript');
+        return $this->_encode($var);
+    }
+    /**
+    * encodes an arbitrary variable into JSON format without JSON Header - warning - may allow CSS!!!!)
+    *
+    * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
+    *                           see argument 1 to Services_JSON() above for array-parsing behavior.
+    *                           if var is a strng, note that encode() always expects it
+    *                           to be in ASCII or UTF-8 format!
+    *
+    * @return   mixed   JSON string representation of input var or an error if a problem occurs
+    * @access   public
+    */
+    function encodeUnsafe($var)
+    {
+        return $this->_encode($var);
+    }
+    /**
+    * PRIVATE CODE that does the work of encodes an arbitrary variable into JSON format 
+    *
+    * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
+    *                           see argument 1 to Services_JSON() above for array-parsing behavior.
+    *                           if var is a strng, note that encode() always expects it
+    *                           to be in ASCII or UTF-8 format!
+    *
+    * @return   mixed   JSON string representation of input var or an error if a problem occurs
+    * @access   public
+    */
+    function _encode($var) 
+    {
+         
         switch (gettype($var)) {
             case 'boolean':
                 return $var ? 'true' : 'false';
@@ -295,6 +326,12 @@ class Services_JSON
                         case (($ord_var_c & 0xE0) == 0xC0):
                             // characters U-00000080 - U-000007FF, mask 110XXXXX
                             // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                            if ($c+1 >= $strlen_var) {
+                                $c += 1;
+                                $ascii .= '?';
+                                break;
+                            }
+                            
                             $char = pack('C*', $ord_var_c, ord($var{$c + 1}));
                             $c += 1;
                             $utf16 = $this->utf82utf16($char);
@@ -302,17 +339,27 @@ class Services_JSON
                             break;
 
                         case (($ord_var_c & 0xF0) == 0xE0):
+                            if ($c+2 >= $strlen_var) {
+                                $c += 2;
+                                $ascii .= '?';
+                                break;
+                            }
                             // characters U-00000800 - U-0000FFFF, mask 1110XXXX
                             // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
                             $char = pack('C*', $ord_var_c,
-                                         ord($var{$c + 1}),
-                                         ord($var{$c + 2}));
+                                         @ord($var{$c + 1}),
+                                         @ord($var{$c + 2}));
                             $c += 2;
                             $utf16 = $this->utf82utf16($char);
                             $ascii .= sprintf('\u%04s', bin2hex($utf16));
                             break;
 
                         case (($ord_var_c & 0xF8) == 0xF0):
+                            if ($c+3 >= $strlen_var) {
+                                $c += 3;
+                                $ascii .= '?';
+                                break;
+                            }
                             // characters U-00010000 - U-001FFFFF, mask 11110XXX
                             // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
                             $char = pack('C*', $ord_var_c,
@@ -327,6 +374,11 @@ class Services_JSON
                         case (($ord_var_c & 0xFC) == 0xF8):
                             // characters U-00200000 - U-03FFFFFF, mask 111110XX
                             // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                            if ($c+4 >= $strlen_var) {
+                                $c += 4;
+                                $ascii .= '?';
+                                break;
+                            }
                             $char = pack('C*', $ord_var_c,
                                          ord($var{$c + 1}),
                                          ord($var{$c + 2}),
@@ -338,6 +390,11 @@ class Services_JSON
                             break;
 
                         case (($ord_var_c & 0xFE) == 0xFC):
+                        if ($c+5 >= $strlen_var) {
+                                $c += 5;
+                                $ascii .= '?';
+                                break;
+                            }
                             // characters U-04000000 - U-7FFFFFFF, mask 1111110X
                             // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
                             $char = pack('C*', $ord_var_c,
@@ -352,8 +409,7 @@ class Services_JSON
                             break;
                     }
                 }
-
-                return '"'.$ascii.'"';
+                return (strpos($ascii, "'") > -1)  ? '"'.$ascii.'"' : "'".$ascii."'";
 
             case 'array':
                /*
@@ -390,7 +446,7 @@ class Services_JSON
                 }
 
                 // treat it like a regular array
-                $elements = array_map(array($this, 'encode'), $var);
+                $elements = array_map(array($this, '_encode'), $var);
 
                 foreach($elements as $element) {
                     if(Services_JSON::isError($element)) {
@@ -433,13 +489,13 @@ class Services_JSON
     */
     function name_value($name, $value)
     {
-        $encoded_value = $this->encode($value);
+        $encoded_value = $this->_encode($value);
 
         if(Services_JSON::isError($encoded_value)) {
             return $encoded_value;
         }
 
-        return $this->encode(strval($name)) . ':' . $encoded_value;
+        return $this->_encode(strval($name)) . ':' . $encoded_value;
     }
 
    /**
@@ -698,9 +754,10 @@ class Services_JSON
 
                         } elseif (($chrs{$c} == $top['delim']) &&
                                  ($top['what'] == SERVICES_JSON_IN_STR) &&
-                                 (($chrs{$c - 1} != '\\') ||
-                                 ($chrs{$c - 1} == '\\' && $chrs{$c - 2} == '\\'))) {
+                                 ((strlen(substr($chrs, 0, $c)) - strlen(rtrim(substr($chrs, 0, $c), '\\'))) % 2 != 1)) {
                             // found a quote, we're in a string, and it's not escaped
+                            // we know that it's not escaped becase there is _not_ an
+                            // odd number of backslashes at the end of the string so far
                             array_pop($stk);
                             //print("Found end of string at {$c}: ".substr($chrs, $top['where'], (1 + 1 + $c - $top['where']))."\n");
 
@@ -801,5 +858,4 @@ if (class_exists('PEAR_Error')) {
     }
 
 }
-    
-?>
+   
