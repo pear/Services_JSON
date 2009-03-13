@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.6.1" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+http://pear.php.net/dtd/tasks-1.0.xsd
+http://pear.php.net/dtd/package-2.0
+http://pear.php.net/dtd/package-2.0.xsd">
+ <name>Services_JSON</name>
+ <channel>pear.php.net</channel>
+ <summary>PHP implementaion of json_encode/decode</summary>
+ <description> 
+JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interchange format. 
+    It is easy for humans to read and write. It is easy for machines to parse and generate. 
+    It is based on a subset of the JavaScript Programming Language, Standard ECMA-262 3rd Edition - December 1999. 
+    This feature can also be found in Python. JSON is a text format that is completely language independent 
+    but uses conventions that are familiar to programmers of the C-family of languages, including
+     C, C++, C#, Java, JavaScript, Perl, TCL, and many others. These properties make JSON an ideal
+     data-interchange language.
+
+    This package provides a simple encoder and decoder for JSON notation. It is intended for use
+     with client-side Javascript applications that make use of HTTPRequest to perform server 
+    communication functions - data can be encoded into JSON notation for use in a client-side
+     javascript, or decoded from incoming Javascript requests. JSON format is native to Javascript, 
+    and can be directly eval()'ed with no further parsing overhead.
+   
+ </description>
+ <lead>
+  <name>Michal Migurski  </name>
+  <user>migurski</user>
+  <email>migurski@php.net</email>
+  <active>yes</active>
+ </lead>
+ <lead>
+  <name>Alan Knowles</name>
+  <user>alan_k</user>
+  <email>alan@akbkhome.com</email>
+  <active>yes</active>
+ </lead>
+ 
+ 
+ <date>2009-03-13</date>
+ 
+ <version>
+  <release>1.0.0</release>
+  <api>1.0.0</api>
+ </version>
+ <stability>
+  <release>stable</release>
+  <api>stable</api>
+ </stability>
+ <license>BSD</license>
+ <notes><![CDATA[
+ 
+   Released into pear with minor changes to original proposal
+   - encode() - encodes and adds http headers
+   - encodeUnsafe() - encodes only
+   - Some UTF8 fixes (better handling of invalid characters)
+
+         
+  
+ ]]></notes>
+ 
+ 
+ 
+ 
+ 
+ <contents>
+  <dir name="/">
+   <file baseinstalldir="Services" name="JSON.php" role="php" />
+  </dir> <!-- / -->
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>4.3</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0b1</min>
+   </pearinstaller>
+  </required>
+ </dependencies>
+ <phprelease />
+ <changelog>
+ 
+ 
+ 
+   </changelog>
+</package>
+
