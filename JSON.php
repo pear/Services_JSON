@@ -409,7 +409,7 @@ class Services_JSON
                             break;
                     }
                 }
-                return (strpos($ascii, "'") > -1)  ? '"'.$ascii.'"' : "'".$ascii."'";
+                return  '"'.$ascii.'"';
 
             case 'array':
                /*
