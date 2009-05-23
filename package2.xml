@@ -36,7 +36,7 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  </lead>
  
  
- <date>2009-03-13</date>
+ <date>2009-05-23</date>
  
  <version>
   <release>1.0.0</release>
@@ -46,14 +46,11 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
   <release>stable</release>
   <api>stable</api>
  </stability>
+
  <license>BSD</license>
  <notes><![CDATA[
  
-   Released into pear with minor changes to original proposal
-   - encode() - encodes and adds http headers
-   - encodeUnsafe() - encodes only
-   - Some UTF8 fixes (better handling of invalid characters)
-
+   Fixed Bug #16251 - Back out change - Use double quotes as per spec
          
   
  ]]></notes>
@@ -80,6 +77,31 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  <phprelease />
  <changelog>
  
+ <release>
+	 
+	 <date>2009-03-13</date>
+	 
+	 <version>
+	  <release>0.9.0</release>
+	  <api>0.9.0</api>
+	 </version>
+	 <stability>
+	  <release>beta</release>
+	  <api>beta</api>
+	 </stability>
+
+	 <license>BSD</license>
+	 <notes><![CDATA[
+	 
+	   Released into pear with minor changes to original proposal
+	   - encode() - encodes and adds http headers
+	   - encodeUnsafe() - encodes only
+	   - Some UTF8 fixes (better handling of invalid characters)
+
+		 
+	  
+	 ]]></notes>
+ </release>
  
  
    </changelog>
