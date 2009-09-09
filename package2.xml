@@ -39,7 +39,7 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  <date>2009-05-23</date>
  
  <version>
-  <release>1.0.0</release>
+  <release>1.0.1</release>
   <api>1.0.0</api>
  </version>
  <stability>
@@ -50,7 +50,7 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  <license>BSD</license>
  <notes><![CDATA[
  
-   Fixed Bug #16251 - Back out change - Use double quotes as per spec
+   Fixed Bug #16585 - Fix correct mime type for encode() - note use encodeUnsafe() to prevent headers being sent.
          
   
  ]]></notes>
@@ -76,9 +76,36 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  </dependencies>
  <phprelease />
  <changelog>
+
+ <release>
+
+ <date>2009-05-23</date>
+ 
+ <version>
+  <release>1.0.0</release>
+  <api>1.0.0</api>
+ </version>
+ <stability>
+  <release>stable</release>
+  <api>stable</api>
+ </stability>
+
+ <license>BSD</license>
+ <notes><![CDATA[
+ 
+   Fixed Bug #16251 - Back out change - Use double quotes as per spec
+         
+  
+ ]]></notes>
+ 
+  </release>
+ 
+ 
+
  
  <release>
 	 
+
 	 <date>2009-03-13</date>
 	 
 	 <version>
