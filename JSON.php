@@ -235,7 +235,7 @@ class Services_JSON
     */
     function encode($var)
     {
-        header('Content-type: application/x-javascript');
+        header('Content-type: application/json');
         return $this->_encode($var);
     }
     /**
