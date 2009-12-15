@@ -279,7 +279,7 @@ class Services_JSON
 
             case 'double':
             case 'float':
-                return (float) $var;
+                return (float) number_format($var,13,'.','');
 
             case 'string':
                 // STRINGS ARE EXPECTED TO BE IN ASCII OR UTF-8 FORMAT
