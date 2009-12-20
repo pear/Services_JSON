@@ -236,7 +236,7 @@ class Services_JSON
     function encode($var)
     {
         header('Content-type: application/json');
-        return $this->_encode($var);
+        return $this->encodeUnsafe($var);
     }
     /**
     * encodes an arbitrary variable into JSON format without JSON Header - warning - may allow CSS!!!!)
@@ -251,7 +251,12 @@ class Services_JSON
     */
     function encodeUnsafe($var)
     {
-        return $this->_encode($var);
+        $lc = setlocale(LC_ALL, 0);
+        setlocale(LC_ALL, 'C');
+        $ret = $this->_encode($var);
+        setlocale(LC_ALL, $lc);
+        return $ret;
+        
     }
     /**
     * PRIVATE CODE that does the work of encodes an arbitrary variable into JSON format 
@@ -279,7 +284,7 @@ class Services_JSON
 
             case 'double':
             case 'float':
-                return  sprintf('%F', $var);
+                return  (float) $var;
 
             case 'string':
                 // STRINGS ARE EXPECTED TO BE IN ASCII OR UTF-8 FORMAT
