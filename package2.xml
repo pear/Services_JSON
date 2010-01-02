@@ -36,10 +36,10 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  </lead>
  
  
- <date>2009-05-23</date>
+ <date>2009-01-02</date>
  
  <version>
-  <release>1.0.1</release>
+  <release>1.0.2</release>
   <api>1.0.0</api>
  </version>
  <stability>
@@ -50,7 +50,7 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  <license>BSD</license>
  <notes><![CDATA[
  
-   Fixed Bug #16585 - Fix correct mime type for encode() - note use encodeUnsafe() to prevent headers being sent.
+   Fixed Bug #16908 - When locale was set, and it changed the way numbers are formated, the output for floats was broken
          
   
  ]]></notes>
@@ -77,58 +77,84 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  <phprelease />
  <changelog>
 
- <release>
 
- <date>2009-05-23</date>
- 
- <version>
-  <release>1.0.0</release>
-  <api>1.0.0</api>
- </version>
- <stability>
-  <release>stable</release>
-  <api>stable</api>
- </stability>
 
- <license>BSD</license>
- <notes><![CDATA[
+	<release>
  
-   Fixed Bug #16251 - Back out change - Use double quotes as per spec
-         
-  
- ]]></notes>
- 
+		 <date>2009-05-23</date>
+		 
+		 <version>
+		  <release>1.0.1</release>
+		  <api>1.0.0</api>
+		 </version>
+		 <stability>
+		  <release>stable</release>
+		  <api>stable</api>
+		 </stability>
+
+		 <license>BSD</license>
+		 <notes><![CDATA[
+		 
+		   Fixed Bug #16585 - Fix correct mime type for encode() - note use encodeUnsafe() to prevent headers being sent.
+				 
+		  
+		 ]]></notes>
+		 
+  	</release> 
+
+
+	 <release>
+
+		 <date>2009-05-23</date>
+		 
+		 <version>
+		  <release>1.0.0</release>
+		  <api>1.0.0</api>
+		 </version>
+		 <stability>
+		  <release>stable</release>
+		  <api>stable</api>
+		 </stability>
+
+		 <license>BSD</license>
+		 <notes><![CDATA[
+		 
+		   Fixed Bug #16251 - Back out change - Use double quotes as per spec
+				 
+		  
+		 ]]></notes>
+		 
   </release>
- 
- 
-
- 
- <release>
-	 
-
-	 <date>2009-03-13</date>
-	 
-	 <version>
-	  <release>0.9.0</release>
-	  <api>0.9.0</api>
-	 </version>
-	 <stability>
-	  <release>beta</release>
-	  <api>beta</api>
-	 </stability>
-
-	 <license>BSD</license>
-	 <notes><![CDATA[
-	 
-	   Released into pear with minor changes to original proposal
-	   - encode() - encodes and adds http headers
-	   - encodeUnsafe() - encodes only
-	   - Some UTF8 fixes (better handling of invalid characters)
+		 
+		 
 
 		 
-	  
-	 ]]></notes>
- </release>
+	 <release>
+		 
+
+		 <date>2009-03-13</date>
+		 
+		 <version>
+		  <release>0.9.0</release>
+		  <api>0.9.0</api>
+		 </version>
+		 <stability>
+		  <release>beta</release>
+		  <api>beta</api>
+		 </stability>
+
+		 <license>BSD</license>
+		 <notes><![CDATA[
+		 
+		   Released into pear with minor changes to original proposal
+		   - encode() - encodes and adds http headers
+		   - encodeUnsafe() - encodes only
+		   - Some UTF8 fixes (better handling of invalid characters)
+
+			 
+		  
+		 ]]></notes>
+	 </release>
  
  
    </changelog>
