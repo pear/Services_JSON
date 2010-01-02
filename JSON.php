@@ -251,10 +251,11 @@ class Services_JSON
     */
     function encodeUnsafe($var)
     {
-        $lc = setlocale(LC_ALL, 0);
-        setlocale(LC_ALL, 'C');
+        // see bug #16908 - regarding numeric locale printing
+        $lc = setlocale(LC_NUMERIC, 0);
+        setlocale(LC_NUMERIC, 'C');
         $ret = $this->_encode($var);
-        setlocale(LC_ALL, $lc);
+        setlocale(LC_NUMERIC, $lc);
         return $ret;
         
     }
