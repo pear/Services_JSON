@@ -239,7 +239,7 @@ class Services_JSON
         return $this->encodeUnsafe($var);
     }
     /**
-    * encodes an arbitrary variable into JSON format without JSON Header - warning - may allow CSS!!!!)
+    * encodes an arbitrary variable into JSON format without JSON Header - warning - may allow XSS!!!!)
     *
     * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
     *                           see argument 1 to Services_JSON() above for array-parsing behavior.
