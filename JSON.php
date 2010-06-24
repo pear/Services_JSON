@@ -196,7 +196,7 @@ class Services_JSON
             return mb_convert_encoding($utf8, 'UTF-16', 'UTF-8');
         }
 
-        switch(strlen($utf8)) {
+        switch($this->strlen8($utf8)) {
             case 1:
                 // this case should never be reached, because we are in ASCII range
                 // see: http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
@@ -290,7 +290,7 @@ class Services_JSON
             case 'string':
                 // STRINGS ARE EXPECTED TO BE IN ASCII OR UTF-8 FORMAT
                 $ascii = '';
-                $strlen_var = strlen($var);
+                $strlen_var = $this->strlen8($var);
 
                /*
                 * Iterate over every character in the string,
@@ -574,14 +574,14 @@ class Services_JSON
 
                 } elseif (preg_match('/^("|\').*(\1)$/s', $str, $m) && $m[1] == $m[2]) {
                     // STRINGS RETURNED IN UTF-8 FORMAT
-                    $delim = substr($str, 0, 1);
-                    $chrs = substr($str, 1, -1);
+                    $delim = $this->substr8($str, 0, 1);
+                    $chrs = $this->substr8($str, 1, -1);
                     $utf8 = '';
-                    $strlen_chrs = strlen($chrs);
+                    $strlen_chrs = $this->strlen8($chrs);
 
                     for ($c = 0; $c < $strlen_chrs; ++$c) {
 
-                        $substr_chrs_c_2 = substr($chrs, $c, 2);
+                        $substr_chrs_c_2 = $this->substr8($chrs, $c, 2);
                         $ord_chrs_c = ord($chrs{$c});
 
                         switch (true) {
@@ -616,10 +616,10 @@ class Services_JSON
                                 }
                                 break;
 
-                            case preg_match('/\\\u[0-9A-F]{4}/i', substr($chrs, $c, 6)):
+                            case preg_match('/\\\u[0-9A-F]{4}/i', $this->substr8($chrs, $c, 6)):
                                 // single, escaped unicode character
-                                $utf16 = chr(hexdec(substr($chrs, ($c + 2), 2)))
-                                       . chr(hexdec(substr($chrs, ($c + 4), 2)));
+                                $utf16 = chr(hexdec($this->substr8($chrs, ($c + 2), 2)))
+                                       . chr(hexdec($this->substr8($chrs, ($c + 4), 2)));
                                 $utf8 .= $this->utf162utf8($utf16);
                                 $c += 5;
                                 break;
@@ -631,35 +631,35 @@ class Services_JSON
                             case ($ord_chrs_c & 0xE0) == 0xC0:
                                 // characters U-00000080 - U-000007FF, mask 110XXXXX
                                 //see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= substr($chrs, $c, 2);
+                                $utf8 .= $this->substr8($chrs, $c, 2);
                                 ++$c;
                                 break;
 
                             case ($ord_chrs_c & 0xF0) == 0xE0:
                                 // characters U-00000800 - U-0000FFFF, mask 1110XXXX
                                 // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= substr($chrs, $c, 3);
+                                $utf8 .= $this->substr8($chrs, $c, 3);
                                 $c += 2;
                                 break;
 
                             case ($ord_chrs_c & 0xF8) == 0xF0:
                                 // characters U-00010000 - U-001FFFFF, mask 11110XXX
                                 // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= substr($chrs, $c, 4);
+                                $utf8 .= $this->substr8($chrs, $c, 4);
                                 $c += 3;
                                 break;
 
                             case ($ord_chrs_c & 0xFC) == 0xF8:
                                 // characters U-00200000 - U-03FFFFFF, mask 111110XX
                                 // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= substr($chrs, $c, 5);
+                                $utf8 .= $this->substr8($chrs, $c, 5);
                                 $c += 4;
                                 break;
 
                             case ($ord_chrs_c & 0xFE) == 0xFC:
                                 // characters U-04000000 - U-7FFFFFFF, mask 1111110X
                                 // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= substr($chrs, $c, 6);
+                                $utf8 .= $this->substr8($chrs, $c, 6);
                                 $c += 5;
                                 break;
 
@@ -689,7 +689,7 @@ class Services_JSON
                                            'where' => 0,
                                            'delim' => false));
 
-                    $chrs = substr($str, 1, -1);
+                    $chrs = $this->substr8($str, 1, -1);
                     $chrs = $this->reduce_string($chrs);
 
                     if ($chrs == '') {
@@ -704,19 +704,19 @@ class Services_JSON
 
                     //print("\nparsing {$chrs}\n");
 
-                    $strlen_chrs = strlen($chrs);
+                    $strlen_chrs = $this->strlen8($chrs);
 
                     for ($c = 0; $c <= $strlen_chrs; ++$c) {
 
                         $top = end($stk);
-                        $substr_chrs_c_2 = substr($chrs, $c, 2);
+                        $substr_chrs_c_2 = $this->substr8($chrs, $c, 2);
 
                         if (($c == $strlen_chrs) || (($chrs{$c} == ',') && ($top['what'] == SERVICES_JSON_SLICE))) {
                             // found a comma that is not inside a string, array, etc.,
                             // OR we've reached the end of the character list
-                            $slice = substr($chrs, $top['where'], ($c - $top['where']));
+                            $slice = $this->substr8($chrs, $top['where'], ($c - $top['where']));
                             array_push($stk, array('what' => SERVICES_JSON_SLICE, 'where' => ($c + 1), 'delim' => false));
-                            //print("Found split at {$c}: ".substr($chrs, $top['where'], (1 + $c - $top['where']))."\n");
+                            //print("Found split at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
                             if (reset($stk) == SERVICES_JSON_IN_ARR) {
                                 // we are in an array, so just push an element onto the stack
@@ -760,12 +760,12 @@ class Services_JSON
 
                         } elseif (($chrs{$c} == $top['delim']) &&
                                  ($top['what'] == SERVICES_JSON_IN_STR) &&
-                                 ((strlen(substr($chrs, 0, $c)) - strlen(rtrim(substr($chrs, 0, $c), '\\'))) % 2 != 1)) {
+                                 (($this->strlen8($this->substr8($chrs, 0, $c)) - $this->strlen8(rtrim($this->substr8($chrs, 0, $c), '\\'))) % 2 != 1)) {
                             // found a quote, we're in a string, and it's not escaped
                             // we know that it's not escaped becase there is _not_ an
                             // odd number of backslashes at the end of the string so far
                             array_pop($stk);
-                            //print("Found end of string at {$c}: ".substr($chrs, $top['where'], (1 + 1 + $c - $top['where']))."\n");
+                            //print("Found end of string at {$c}: ".$this->substr8($chrs, $top['where'], (1 + 1 + $c - $top['where']))."\n");
 
                         } elseif (($chrs{$c} == '[') &&
                                  in_array($top['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) {
@@ -776,7 +776,7 @@ class Services_JSON
                         } elseif (($chrs{$c} == ']') && ($top['what'] == SERVICES_JSON_IN_ARR)) {
                             // found a right-bracket, and we're in an array
                             array_pop($stk);
-                            //print("Found end of array at {$c}: ".substr($chrs, $top['where'], (1 + $c - $top['where']))."\n");
+                            //print("Found end of array at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
                         } elseif (($chrs{$c} == '{') &&
                                  in_array($top['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) {
@@ -787,7 +787,7 @@ class Services_JSON
                         } elseif (($chrs{$c} == '}') && ($top['what'] == SERVICES_JSON_IN_OBJ)) {
                             // found a right-brace, and we're in an object
                             array_pop($stk);
-                            //print("Found end of object at {$c}: ".substr($chrs, $top['where'], (1 + $c - $top['where']))."\n");
+                            //print("Found end of object at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
                         } elseif (($substr_chrs_c_2 == '/*') &&
                                  in_array($top['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) {
@@ -804,7 +804,7 @@ class Services_JSON
                             for ($i = $top['where']; $i <= $c; ++$i)
                                 $chrs = substr_replace($chrs, ' ', $i, 1);
 
-                            //print("Found end of comment at {$c}: ".substr($chrs, $top['where'], (1 + $c - $top['where']))."\n");
+                            //print("Found end of comment at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
                         }
 
@@ -836,6 +836,38 @@ class Services_JSON
 
         return false;
     }
+    
+    /**
+    * Calculates length of string in bytes
+    * @param string 
+    * @return integer length
+    */
+    function strlen8( $str ) 
+    {
+        if ( function_exists( "mb_strlen" ) ) {
+            return mb_strlen( $str, "8bit" );
+        }
+        return strlen( $str );
+    }
+    
+    /**
+    * Returns part of a string, interpreting $start and $length as number of bytes.
+    * @param string 
+    * @param integer start 
+    * @param integer length 
+    * @return integer length
+    */
+    function substr8( $string, $start, $length=false ) 
+    {
+        if ( $length === false ) {
+            $length = $this->strlen8( $string ) - $start;
+        }
+        if ( function_exists( "mb_substr" ) ) {
+            return mb_substr( $string, $start, $length, "8bit" );
+        }
+        return substr( $string, $start, $length );
+    }
+
 }
 
 if (class_exists('PEAR_Error')) {
@@ -862,6 +894,5 @@ if (class_exists('PEAR_Error')) {
 
         }
     }
-
+    
 }
-   
