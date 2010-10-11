@@ -729,20 +729,19 @@ class Services_JSON
                                 // for now
                                 $parts = array();
                                 
-                                if (preg_match('/^\s*(["\'].*[^\\\]["\'])\s*:\s*(\S.*),?$/Uis', $slice, $parts)) {
-                                    // "name":value pair
+                               if (preg_match('/^\s*(["\'].*[^\\\]["\'])\s*:/Uis', $slice, $parts)) {
+ 	                              // "name":value pair
                                     $key = $this->decode($parts[1]);
-                                    $val = $this->decode($parts[2]);
-
+                                    $val = $this->decode(trim(substr($slice, strlen($parts[0])), ", \t\n\r\0\x0B"));
                                     if ($this->use & SERVICES_JSON_LOOSE_TYPE) {
                                         $obj[$key] = $val;
                                     } else {
                                         $obj->$key = $val;
                                     }
-                                } elseif (preg_match('/^\s*(\w+)\s*:\s*(\S.*),?$/Uis', $slice, $parts)) {
+                                } elseif (preg_match('/^\s*(\w+)\s*:/Uis', $slice, $parts)) {
                                     // name:value pair, where name is unquoted
                                     $key = $parts[1];
-                                    $val = $this->decode($parts[2]);
+                                    $val = $this->decode(trim(substr($slice, strlen($parts[0])), ", \t\n\r\0\x0B"));
 
                                     if ($this->use & SERVICES_JSON_LOOSE_TYPE) {
                                         $obj[$key] = $val;

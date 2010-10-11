@@ -20,8 +20,9 @@
     error_reporting(E_ALL);
 
     require_once 'PHPUnit.php';
+    require_once 'PEAR.php';
     require_once 'JSON.php';
-
+    
     class Services_JSON_EncDec_TestCase extends PHPUnit_TestCase {
 
         function Services_JSON_EncDec_TestCase($name) {
