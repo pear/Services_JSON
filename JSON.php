@@ -142,8 +142,15 @@ class Services_JSON
     function Services_JSON($use = 0)
     {
         $this->use = $use;
+        $this->_mb_strlen            = function_exists('mb_strlen');
+        $this->_mb_convert_encoding  = function_exists('mb_convert_encoding');
+        $this->_mb_substr            = function_exists('mb_substr');
     }
-
+    // private - cache the mbstring lookup results..
+    var $_mb_strlen = false;
+    var $_mb_substr = false;
+    var $_mb_convert_encoding = false;
+    
    /**
     * convert a string from one UTF-16 char to one UTF-8 char
     *
@@ -158,7 +165,7 @@ class Services_JSON
     function utf162utf8($utf16)
     {
         // oh please oh please oh please oh please oh please
-        if(function_exists('mb_convert_encoding')) {
+        if($this->_mb_convert_encoding) {
             return mb_convert_encoding($utf16, 'UTF-8', 'UTF-16');
         }
 
@@ -202,7 +209,7 @@ class Services_JSON
     function utf82utf16($utf8)
     {
         // oh please oh please oh please oh please oh please
-        if(function_exists('mb_convert_encoding')) {
+        if($this->_mb_convert_encoding) {
             return mb_convert_encoding($utf8, 'UTF-16', 'UTF-8');
         }
 
@@ -872,7 +879,7 @@ class Services_JSON
     */
     function strlen8( $str ) 
     {
-        if ( function_exists( "mb_strlen" ) ) {
+        if ( $this->_mb_strlen ) {
             return mb_strlen( $str, "8bit" );
         }
         return strlen( $str );
@@ -890,7 +897,7 @@ class Services_JSON
         if ( $length === false ) {
             $length = $this->strlen8( $string ) - $start;
         }
-        if ( function_exists( "mb_substr" ) ) {
+        if ( $this->_mb_substr ) {
             return mb_substr( $string, $start, $length, "8bit" );
         }
         return substr( $string, $start, $length );
