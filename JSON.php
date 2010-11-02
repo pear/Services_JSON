@@ -133,9 +133,11 @@ class Services_JSON
     *                                   By default, a deeply-nested resource will
     *                                   bubble up with an error, so all return values
     *                                   from encode() should be checked with isError()
-    *                           - SERVICES_JSON_USE_TO_JSON:  use toJSON on objects
-    *                                   Uses return value from toJSON on objects to determine
-    *                                   what to serialize. toJSON should return an associative array.
+    *                           - SERVICES_JSON_USE_TO_JSON:  call toJSON when serializing objects
+    *                                   It serializes the return value from the toJSON call rather 
+    *                                   than the object it'self,  toJSON can return associative arrays, 
+    *                                   strings or numbers, if you return an object, make sure it does
+    *                                   not have a toJSON method, otherwise an error will occur.
     */
     function Services_JSON($use = 0)
     {
@@ -474,12 +476,24 @@ class Services_JSON
             
                 // support toJSON methods.
                 if (($this->use & SERVICES_JSON_USE_TO_JSON) && method_exists($var, 'toJSON')) {
-                    $vars = $var->toJSON();
-                } else {
-                    $vars = get_object_vars($var);
-                }
-             
-
+                    // this may end up allowing unlimited recursion
+                    // so we check the return value to make sure it's not got the same method.
+                    $recode = $var->toJSON();
+                    
+                    if (method_exists($recode, 'toJSON')) {
+                        
+                        return ($this->use & SERVICES_JSON_SUPPRESS_ERRORS)
+                        ? 'null'
+                        : new Services_JSON_Error(class_name($var).
+                            " toJSON returned an object with a toJSON method.");
+                            
+                    }
+                    
+                    return $this->_encode( $recode );
+                } 
+                
+                $vars = get_object_vars($var);
+                
                 $properties = array_map(array($this, 'name_value'),
                                         array_keys($vars),
                                         array_values($vars));
