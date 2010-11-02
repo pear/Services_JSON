@@ -91,6 +91,11 @@ define('SERVICES_JSON_LOOSE_TYPE', 16);
 define('SERVICES_JSON_SUPPRESS_ERRORS', 32);
 
 /**
+ * Behavior switch for Services_JSON::decode()
+ */
+define('SERVICES_JSON_USE_TO_JSON', 64);
+
+/**
  * Converts to and from JSON format.
  *
  * Brief example of use:
@@ -128,6 +133,9 @@ class Services_JSON
     *                                   By default, a deeply-nested resource will
     *                                   bubble up with an error, so all return values
     *                                   from encode() should be checked with isError()
+    *                           - SERVICES_JSON_USE_TO_JSON:  use toJSON on objects
+    *                                   Uses return value from toJSON on objects to determine
+    *                                   what to serialize. toJSON should return an associative array.
     */
     function Services_JSON($use = 0)
     {
@@ -463,7 +471,14 @@ class Services_JSON
                 return '[' . join(',', $elements) . ']';
 
             case 'object':
-                $vars = get_object_vars($var);
+            
+                // support toJSON methods.
+                if (($this->use & SERVICES_JSON_USE_TO_JSON) && method_exists($var, 'toJSON')) {
+                    $vars = $var->toJSON();
+                } else {
+                    $vars = get_object_vars($var);
+                }
+             
 
                 $properties = array_map(array($this, 'name_value'),
                                         array_keys($vars),
