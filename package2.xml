@@ -36,10 +36,10 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  </lead>
  
  
- <date>2009-01-02</date>
+ <date>2011-01-14</date>
  
  <version>
-  <release>1.0.2</release>
+  <release>1.0.3</release>
   <api>1.0.0</api>
  </version>
  <stability>
@@ -49,8 +49,25 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
 
  <license>BSD</license>
  <notes><![CDATA[
- 
-   Fixed Bug #16908 - When locale was set, and it changed the way numbers are formated, the output for floats was broken
+   Minor feature / bugfix release
+
+   #18018 - toJSON() support (classes can now implement toJSON(), which should return  
+   #17921 - long strings cause problems for parser
+   #17515 - handle mbstring overloading of strlen 
+   ------ - cache lookups for mb functions during constructor
+
+toJSON notes:
+$ser = new Services_JSON( SERVICES_JSON_USE_TO_JSON );
+
+class A {
+        // toJSON should return an associtive array of the properties to serialize
+        // same standard as JSON.stringify()
+        function toJSON() {
+                return array( 'a' => $this->a, 'b'=>$this->b) ;
+        }
+}
+echo $sj->encode(new A());
+
          
   
  ]]></notes>
@@ -76,6 +93,32 @@ JSON (JavaScript Object Notation, http://json.org) is a lightweight data-interch
  </dependencies>
  <phprelease />
  <changelog>
+
+
+        <release>
+ 
+
+                 <date>2009-01-02</date>
+                 
+                 <version>
+                  <release>1.0.2</release>
+                  <api>1.0.0</api>
+                 </version>
+                 <stability>
+                  <release>stable</release>
+                  <api>stable</api>
+                 </stability>
+
+                 <license>BSD</license>
+                 <notes><![CDATA[
+                 
+                   Fixed Bug #16908 - When locale was set, and it changed the way numbers are formated, the output for floats was broken
+                         
+                  
+                 ]]></notes>
+         
+         
+        </release> 
 
 
 
