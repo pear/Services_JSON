@@ -151,6 +151,10 @@ class Services_JSON
     var $_mb_substr = false;
     var $_mb_convert_encoding = false;
     
+    // tab and crlf are used by stringfy to produce pretty JSON.
+    var $_tab = '';
+    var $_crlf = '';
+    var $_indent = 0;
    /**
     * convert a string from one UTF-16 char to one UTF-8 char
     *
@@ -239,7 +243,49 @@ class Services_JSON
         return '';
     }
 
+     /**
+    * stringfy an arbitrary variable into JSON format (and sends JSON Header)
+    *
+    * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
+    *                           see argument 1 to Services_JSON() above for array-parsing behavior.
+    *                           if var is a strng, note that encode() always expects it
+    *                           to be in ASCII or UTF-8 format!
+    *
+    * @return   mixed   JSON string representation of input var or an error if a problem occurs
+    * @access   public
+    */
    /**
+    * encodes an arbitrary variable into JSON format (and sends JSON Header)
+    * UNSAFE - does not send HTTP headers (to be compatible with Javsacript Spec)
+    *
+    * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
+    *                           see argument 1 to Services_JSON() above for array-parsing behavior.
+    *                           if var is a strng, note that encode() always expects it
+    *                           to be in ASCII or UTF-8 format!
+    * @param    mixed   $replacer    NOT SUPPORTED YET.
+    * @param    number|string   $space 
+    *                           an optional parameter that specifies the indentation
+    *                           of nested structures. If it is omitted, the text will
+    *                           be packed without extra whitespace. If it is a number,
+    *                           it will specify the number of spaces to indent at each
+    *                           level. If it is a string (such as '\t' or '&nbsp;'),
+    *                           it contains the characters used to indent at each level.
+    *
+    * @return   mixed   JSON string representation of input var or an error if a problem occurs
+    * @access   public
+    */
+    static function stringify($var, $replacer=false, $space=false)
+    {
+        //header('Content-type: application/json');
+        $s = new Services_JSON(SERVICES_JSON_USE_TO_JSON);
+        
+        $s->_tab = is_numeric($space) ? str_repeat(' ', $space) : $space;
+        $s->_crlf = "\n";
+        $s->_indent = 0;
+        return  $s->encodeUnsafe($var);
+        
+    }
+    /**
     * encodes an arbitrary variable into JSON format (and sends JSON Header)
     *
     * @param    mixed   $var    any number, boolean, string, array, or object to be encoded.
@@ -289,7 +335,9 @@ class Services_JSON
     */
     function _encode($var) 
     {
-         
+        $ind = str_repeat($this->_tab, $this->_indent);
+        $indx = $ind . $this->_tab; 
+        
         switch (gettype($var)) {
             case 'boolean':
                 return $var ? 'true' : 'false';
@@ -455,29 +503,44 @@ class Services_JSON
 
                 // treat as a JSON object
                 if (is_array($var) && count($var) && (array_keys($var) !== range(0, sizeof($var) - 1))) {
+                    $this->_indent++;
                     $properties = array_map(array($this, 'name_value'),
                                             array_keys($var),
                                             array_values($var));
-
+                    $this->_indent--;
                     foreach($properties as $property) {
                         if(Services_JSON::isError($property)) {
                             return $property;
                         }
                     }
-
-                    return '{' . join(',', $properties) . '}';
+                    
+                    return "{" . $this->_crlf .  $indx .  
+                        join(",". $this->_crlf . $indx, $properties) . $this->_crlf .
+                        $ind."}";
+                    
                 }
 
                 // treat it like a regular array
+                $this->_indent++;
                 $elements = array_map(array($this, '_encode'), $var);
-
+                $this->_indent--;
+                
                 foreach($elements as $element) {
                     if(Services_JSON::isError($element)) {
                         return $element;
                     }
                 }
-
-                return '[' . join(',', $elements) . ']';
+                
+                $pad = $this->_tab === '' ? '' : ' ';
+                
+                // short array, just show it on one line.
+                if (strlen(join(',' . $pad, $elements)) < 30) {
+                    return '[' . join(',' . $pad, $elements) . ']';
+                }
+                
+                return "[" . $this->_crlf .
+                    $indx .  join(",". $this->_crlf . $indx, $elements) . $this->_crlf .
+                    $ind . "]";
 
             case 'object':
             
@@ -501,18 +564,22 @@ class Services_JSON
                 
                 $vars = get_object_vars($var);
                 
+                $this->_indent++;
                 $properties = array_map(array($this, 'name_value'),
                                         array_keys($vars),
                                         array_values($vars));
-
+                $this->_indent--;
+                
                 foreach($properties as $property) {
                     if(Services_JSON::isError($property)) {
                         return $property;
                     }
                 }
-
-                return '{' . join(',', $properties) . '}';
-
+                
+                return "{" . $this->_crlf .
+                    $indx .  join(",". $this->_crlf . $indx, $properties) . $this->_crlf .
+                    $ind . "}";
+                
             default:
                 return ($this->use & SERVICES_JSON_SUPPRESS_ERRORS)
                     ? 'null'
@@ -532,12 +599,14 @@ class Services_JSON
     function name_value($name, $value)
     {
         $encoded_value = $this->_encode($value);
-
+        
         if(Services_JSON::isError($encoded_value)) {
             return $encoded_value;
         }
-
-        return $this->_encode(strval($name)) . ':' . $encoded_value;
+        
+        $pad = $this->_tab === '' ? '' : ' ';
+        
+        return $this->_encode(strval($name)) . $pad . ':' . $pad . $encoded_value;
     }
 
    /**
