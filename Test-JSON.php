@@ -475,6 +475,38 @@
             $this->assertEquals($this->obj_j_, $this->json_->encode($this->obj), "object case: {$this->obj_d}");
         }
     }
+    
+     class Services_JSON_FixJson_TestCase extends PHPUnit_TestCase {
+
+        function Services_JSON_FixJson_TestCase($name) {
+            $this->PHPUnit_TestCase($name);
+        }
+
+        function setUp() {
+            $this->json = new Services_JSON(SERVICES_JSON_IN_ARR|SERVICES_JSON_USE_TO_JSON| SERVICES_JSON_LOOSE_TYPE);
+
+            $this->arn_ja = "{sos:presents,james:'bond',agent:[0,0,7],secret:\"{mission:'impossible',permit:\"tokill\"}\",go:true }";
+            $this->arn_ja_fixed ="{\"sos\":\"presents\",\"james\":'bond',\"agent\":[0,0,7],\"secret\":\"{mission:'impossible',permit:\"tokill\"}\",\"go\":true}";
+            $this->arn_d = 'Json Fix test case with undoublequoted keys and values, challenging decoding specially for classes and json values';
+
+        }
+
+        function test_from_JSON()
+        {
+            //back to Class, PHP compatible (loose mode for JS) else JS compatible (broken for PHP)
+            function backToClass($json, $class="PHP") {
+                $repl=($class =="PHP") ? '"$1"' : '$1';
+                return preg_replace('/"\$\{(.*)\}"/ismU', $repl, $json);
+            }
+            
+            function json_fix($json,$to="PHP") {
+                return backToClass(json_encode($this->json->decode($json),true),$to);
+            }
+            // Test if decode and backToClass get it to the original 
+            $this->assertEquals(json_decode($this->arn_ja_fixed,true), json_decode(json_fix($this->arn_ja),true), "Json in javascript world fixed for json in php world and then back without loosing anybody");
+        }
+    }
+
 
     $suite  = new PHPUnit_TestSuite('Services_JSON_EncDec_TestCase');
     $result = PHPUnit::run($suite);
@@ -508,4 +540,7 @@
     $result = PHPUnit::run($suite);
     echo $result->toString();
 
+    $suite  = new PHPUnit_TestSuite('Services_JSON_FixJson_TestCase');
+    $result = PHPUnit::run($suite);
+    echo $result->toString();
 ?>
