@@ -19,19 +19,28 @@
 include("JSON.php"); //Patched version 
 	
 
-$arn_ja = "{sos:presents,james:'bond',agent:[0,0,7],secret:\"{mission:'impossible',permit:\"tokill\"}\",go:true }";
-$arn_ja_valid ="{\"sos\":\"presents\",\"james\":\"bond\",\"agent\":[0,0,7],\"secret\":\"{mission:'impossible',permit:\\\"tokill\\\"}\",\"go\":true}";
+$arn_ja = "{sos:presents,james:'bond',agent:[0,0,7],secret:\"{mission:'impossible',permit:\"tokill\"}\",go:true, regex: /https:\/\/player.blubrry.com\/id\/([^\/]+)/}";
+$arn_ja_valid ="{\"sos\":\"presents\",\"james\":\"bond\",\"agent\":[0,0,7],\"secret\":\"{mission:'impossible',permit:\\\"tokill\\\"}\",\"go\":true,\"regex\": \"/https:\/\/player.blubrry.com\/id\/([^\/]+)/\"}";
+
+
 $arn_d = 'Json Fix test case with undoublequoted keys and values, challenging decoding specially for classes and json values';
 
 
 //back to Class, PHP compatible (loose mode for JS) else JS compatible (broken for PHP)
 function backToClass($json, $class="PHP") {
+    //unprotect regexp delimiters values
+    $repl=($class =="PHP") ? '"/$1/"' : '/$1/';
+    $tjson=preg_replace('/"\${#(.*)#}"/ismU', $repl, $json);
+    //unprotext undoublequoted values
     $repl=($class =="PHP") ? '"$1"' : '$1';
-    return preg_replace('/"\$\{(.*)\}"/ismU', $repl, $json);
+    return preg_replace('/"\${(.*)}"/ismU', $repl, $tjson);
 }
 
 function json_fix($json,$to="PHP",$skipBackToClass=false) {
     $sjson = new Services_JSON(SERVICES_JSON_IN_ARR|SERVICES_JSON_USE_TO_JSON| SERVICES_JSON_LOOSE_TYPE);
+    
+     echo(htmlentities(var_export($sjson->decode($json),true)));
+    
     $json=json_encode($sjson->decode($json),true);
     if(!$skipBackToClass) $json=backToClass($json,$to);
     return $json;
@@ -90,7 +99,7 @@ $arn_fixed=json_decode($arn_ja_fixed,true);
     
         
     }else {
-        echo(json_last_error_msg()); 
+        echo('json_decode($arn_ja_valid,true) with $arn_ja_valid='.$arn_ja_valid.' retruns'.json_last_error_msg()); 
     }
     
      echo "<li>So result is: ";

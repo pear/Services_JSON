@@ -828,7 +828,8 @@ class Services_JSON
                 } else {
                     
                         //Ensures string value is doubleQuoted whatever is provided so we do 
-                        // have null value for js/object class names or instances.
+                        // ie fix null value for js/object class names or instances.
+                        // and handles regexp /foo/
                         
                         if (preg_match('/^("|\').*(\1)$/s', $str, $m) && $m[1] == $m[2]) {
                             $delim=$m[1];
@@ -841,7 +842,13 @@ class Services_JSON
                         if($delim) {
                             $str=$delim.$str.$delim;
                         }else {
-                            $str='"${'.$str.'}"'; //This is the best I can do, resolving back to class must be done separatly
+                            if(preg_match('#^(\/).*(\1)$#s',$str,$m) && $m[1] == $m[2]) { 
+                                //Regexp my Lord, prevent escaping slash delimiters
+                                $str='"${#'.substr($str,1,-1).'#}"'; 
+                            } else {
+                                //This is the best I can do for values laquing of doublequote, ie js classes instances, resolving back to class must be done separatly
+                                $str='"${'.$str.'}"';
+                            }
                         }
                         //echo("<br><b>Processing $str</b>");
        
