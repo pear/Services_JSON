@@ -846,7 +846,7 @@ class Services_JSON
                                 //Regexp my Lord, prevent escaping slash delimiters
                                 $str='"${#'.substr($str,1,-1).'#}"'; 
                             } else {
-                                //This is the best I can do for values laquing of doublequote, ie js classes instances, resolving back to class must be done separatly
+                                //This is the best I can do for values lacking of doublequote, ie js classes instances, resolving back to class must be done separatly
                                 $str='"${'.$str.'}"';
                             }
                         }
