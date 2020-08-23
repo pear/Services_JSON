@@ -19,6 +19,9 @@
 include("JSON.php"); //Patched version 
 	
 
+define("SHOW_TRANSIENT_JSON_FIXED",0);
+
+
 $arn_ja = "{sos:presents,james:'bond',agent:[0,0,7],secret:\"{mission:'impossible',permit:\"tokill\"}\",go:true, regex: /https:\/\/player.blubrry.com\/id\/([^\/]+)/}";
 $arn_ja_valid ="{\"sos\":\"presents\",\"james\":\"bond\",\"agent\":[0,0,7],\"secret\":\"{mission:'impossible',permit:\\\"tokill\\\"}\",\"go\":true,\"regex\": \"/https:\/\/player.blubrry.com\/id\/([^\/]+)/\"}";
 
@@ -39,7 +42,7 @@ function backToClass($json, $class="PHP") {
 function json_fix($json,$to="PHP",$skipBackToClass=false) {
     $sjson = new Services_JSON(SERVICES_JSON_IN_ARR|SERVICES_JSON_USE_TO_JSON| SERVICES_JSON_LOOSE_TYPE);
     
-     echo(htmlentities(var_export($sjson->decode($json),true)));
+    if(SHOW_TRANSIENT_JSONFIXED) echo(htmlentities(var_export($sjson->decode($json),true)));
     
     $json=json_encode($sjson->decode($json),true);
     if(!$skipBackToClass) $json=backToClass($json,$to);
