@@ -677,103 +677,6 @@ class Services_JSON
                         ? (integer)$str
                         : (float)$str;
 
-                } elseif (preg_match('/^("|\').*(\1)$/s', $str, $m) && $m[1] == $m[2]) {
-                    // STRINGS RETURNED IN UTF-8 FORMAT
-                    $delim = $this->substr8($str, 0, 1);
-                    $chrs = $this->substr8($str, 1, -1);
-                    $utf8 = '';
-                    $strlen_chrs = $this->strlen8($chrs);
-
-                    for ($c = 0; $c < $strlen_chrs; ++$c) {
-
-                        $substr_chrs_c_2 = $this->substr8($chrs, $c, 2);
-                        $ord_chrs_c = ord($chrs{$c});
-
-                        switch (true) {
-                            case $substr_chrs_c_2 == '\b':
-                                $utf8 .= chr(0x08);
-                                ++$c;
-                                break;
-                            case $substr_chrs_c_2 == '\t':
-                                $utf8 .= chr(0x09);
-                                ++$c;
-                                break;
-                            case $substr_chrs_c_2 == '\n':
-                                $utf8 .= chr(0x0A);
-                                ++$c;
-                                break;
-                            case $substr_chrs_c_2 == '\f':
-                                $utf8 .= chr(0x0C);
-                                ++$c;
-                                break;
-                            case $substr_chrs_c_2 == '\r':
-                                $utf8 .= chr(0x0D);
-                                ++$c;
-                                break;
-
-                            case $substr_chrs_c_2 == '\\"':
-                            case $substr_chrs_c_2 == '\\\'':
-                            case $substr_chrs_c_2 == '\\\\':
-                            case $substr_chrs_c_2 == '\\/':
-                                if (($delim == '"' && $substr_chrs_c_2 != '\\\'') ||
-                                   ($delim == "'" && $substr_chrs_c_2 != '\\"')) {
-                                    $utf8 .= $chrs{++$c};
-                                }
-                                break;
-
-                            case preg_match('/\\\u[0-9A-F]{4}/i', $this->substr8($chrs, $c, 6)):
-                                // single, escaped unicode character
-                                $utf16 = chr(hexdec($this->substr8($chrs, ($c + 2), 2)))
-                                       . chr(hexdec($this->substr8($chrs, ($c + 4), 2)));
-                                $utf8 .= $this->utf162utf8($utf16);
-                                $c += 5;
-                                break;
-
-                            case ($ord_chrs_c >= 0x20) && ($ord_chrs_c <= 0x7F):
-                                $utf8 .= $chrs{$c};
-                                break;
-
-                            case ($ord_chrs_c & 0xE0) == 0xC0:
-                                // characters U-00000080 - U-000007FF, mask 110XXXXX
-                                //see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= $this->substr8($chrs, $c, 2);
-                                ++$c;
-                                break;
-
-                            case ($ord_chrs_c & 0xF0) == 0xE0:
-                                // characters U-00000800 - U-0000FFFF, mask 1110XXXX
-                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= $this->substr8($chrs, $c, 3);
-                                $c += 2;
-                                break;
-
-                            case ($ord_chrs_c & 0xF8) == 0xF0:
-                                // characters U-00010000 - U-001FFFFF, mask 11110XXX
-                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= $this->substr8($chrs, $c, 4);
-                                $c += 3;
-                                break;
-
-                            case ($ord_chrs_c & 0xFC) == 0xF8:
-                                // characters U-00200000 - U-03FFFFFF, mask 111110XX
-                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= $this->substr8($chrs, $c, 5);
-                                $c += 4;
-                                break;
-
-                            case ($ord_chrs_c & 0xFE) == 0xFC:
-                                // characters U-04000000 - U-7FFFFFFF, mask 1111110X
-                                // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
-                                $utf8 .= $this->substr8($chrs, $c, 6);
-                                $c += 5;
-                                break;
-
-                        }
-
-                    }
-
-                    return $utf8;
-
                 } elseif (preg_match('/^\[.*\]$/s', $str) || preg_match('/^\{.*\}$/s', $str)) {
                     // array, or object notation
 
@@ -922,6 +825,129 @@ class Services_JSON
 
                     }
 
+                } else {
+                    
+                        //Ensures string value is doubleQuoted whatever is provided so we do 
+                        // ie fix null value for js/object class names or instances.
+                        // and handles regexp /foo/
+                        
+                        if (preg_match('/^("|\').*(\1)$/s', $str, $m) && $m[1] == $m[2]) {
+                            $delim=$m[1];
+                        }else {
+                            $delim='';
+                        }
+                        
+                        $str=trim($str,'"|\'');
+                        
+                        if($delim) {
+                            $str=$delim.$str.$delim;
+                        }else {
+                            if(preg_match('#^(\/).*(\1)$#s',$str,$m) && $m[1] == $m[2]) { 
+                                //Regexp my Lord, prevent escaping slash delimiters
+                                $str='"${#'.substr($str,1,-1).'#}"'; 
+                            } else {
+                                //This is the best I can do for values lacking of doublequote, ie js classes instances, resolving back to class must be done separatly
+                                $str='"${'.$str.'}"';
+                            }
+                        }
+                        //echo("<br><b>Processing $str</b>");
+       
+                        // STRINGS RETURNED IN UTF-8 FORMAT
+                        $delim = $this->substr8($str, 0, 1);
+                        $chrs = $this->substr8($str, 1, -1);
+                        $utf8 = '';
+                        $strlen_chrs = $this->strlen8($chrs);
+
+                        for ($c = 0; $c < $strlen_chrs; ++$c) {
+
+                            $substr_chrs_c_2 = $this->substr8($chrs, $c, 2);
+                            $ord_chrs_c = ord($chrs{$c});
+
+                            switch (true) {
+                                case $substr_chrs_c_2 == '\b':
+                                    $utf8 .= chr(0x08);
+                                    ++$c;
+                                    break;
+                                case $substr_chrs_c_2 == '\t':
+                                    $utf8 .= chr(0x09);
+                                    ++$c;
+                                    break;
+                                case $substr_chrs_c_2 == '\n':
+                                    $utf8 .= chr(0x0A);
+                                    ++$c;
+                                    break;
+                                case $substr_chrs_c_2 == '\f':
+                                    $utf8 .= chr(0x0C);
+                                    ++$c;
+                                    break;
+                                case $substr_chrs_c_2 == '\r':
+                                    $utf8 .= chr(0x0D);
+                                    ++$c;
+                                    break;
+
+                                case $substr_chrs_c_2 == '\\"':
+                                case $substr_chrs_c_2 == '\\\'':
+                                case $substr_chrs_c_2 == '\\\\':
+                                case $substr_chrs_c_2 == '\\/':
+                                    if (($delim == '"' && $substr_chrs_c_2 != '\\\'') ||
+                                    ($delim == "'" && $substr_chrs_c_2 != '\\"')) {
+                                        $utf8 .= $chrs{++$c};
+                                    }
+                                    break;
+
+                                case preg_match('/\\\u[0-9A-F]{4}/i', $this->substr8($chrs, $c, 6)):
+                                    // single, escaped unicode character
+                                    $utf16 = chr(hexdec($this->substr8($chrs, ($c + 2), 2)))
+                                        . chr(hexdec($this->substr8($chrs, ($c + 4), 2)));
+                                    $utf8 .= $this->utf162utf8($utf16);
+                                    $c += 5;
+                                    break;
+
+                                case ($ord_chrs_c >= 0x20) && ($ord_chrs_c <= 0x7F):
+                                    $utf8 .= $chrs{$c};
+                                    break;
+
+                                case ($ord_chrs_c & 0xE0) == 0xC0:
+                                    // characters U-00000080 - U-000007FF, mask 110XXXXX
+                                    //see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                    $utf8 .= $this->substr8($chrs, $c, 2);
+                                    ++$c;
+                                    break;
+
+                                case ($ord_chrs_c & 0xF0) == 0xE0:
+                                    // characters U-00000800 - U-0000FFFF, mask 1110XXXX
+                                    // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                    $utf8 .= $this->substr8($chrs, $c, 3);
+                                    $c += 2;
+                                    break;
+
+                                case ($ord_chrs_c & 0xF8) == 0xF0:
+                                    // characters U-00010000 - U-001FFFFF, mask 11110XXX
+                                    // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                    $utf8 .= $this->substr8($chrs, $c, 4);
+                                    $c += 3;
+                                    break;
+
+                                case ($ord_chrs_c & 0xFC) == 0xF8:
+                                    // characters U-00200000 - U-03FFFFFF, mask 111110XX
+                                    // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                    $utf8 .= $this->substr8($chrs, $c, 5);
+                                    $c += 4;
+                                    break;
+
+                                case ($ord_chrs_c & 0xFE) == 0xFC:
+                                    // characters U-04000000 - U-7FFFFFFF, mask 1111110X
+                                    // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+                                    $utf8 .= $this->substr8($chrs, $c, 6);
+                                    $c += 5;
+                                    break;
+
+                            }
+
+                        }
+
+                        return $utf8;
+                    
                 }
         }
     }
